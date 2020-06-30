@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kashiyama test</title>
+</head>
+
+<body>
+    <div id='product-selector'>
+        <h2>Select a product</h1>
+            <label class="container">Classic
+                <input type="radio" checked="checked" name="products" value='Classic' />
+                <span class="checkmark"></span>
+            </label>|
+            <label class="container">Modern
+                <input type="radio" name="products" value='Modern' />
+                <span class="checkmark"></span>
+            </label>|
+            <label class="container">Tuxedo
+                <input type="radio" name="products" value='Tuxedo' />
+                <span class="checkmark"></span>
+            </label>
+            <button id='use-product'>Use product</button>
+    </div>
+    <div id="player" style="height: 1000px;">
+    </div>
+    <script src="https://admin.threekit.com/app/js/threekit-player.js"></script>
+    <script>
+        const initializePlayer = (assetId, initialConfiguration = {}) => {
+            const AUTH_TOKEN = '17d52131-4f5b-4540-be0a-8b3570342f65';
+            const TK_ENV = 'https://admin.threekit.com/';
+            const CONFIG_ENDPOINT = `${TK_ENV}api/configurations?bearer_token=${AUTH_TOKEN}`;
+            const DRAG_PIXEL_SENSITIVITY = 150;
+            return threekitPlayer({
+                authToken: AUTH_TOKEN,
+                el: document.getElementById('player'),
+                assetId,
+                initialConfiguration,
+                showConfigurator: true,
+                display: 'image',
+            }).then(async (api) => {
+                let statDragging = false;
+                let startPos = null;
+                let vestView = false;
+                let deltaIdx = 0;
+                let curIdx = 0;
+                const rotations = ['front', 'right', 'back', 'left'];
+
+                await api.when('preloaded');
+                ['orbit', 'pan', 'zoom'].forEach(function (tool) {
+                    api.tools.removeTool(tool);
+                });
+                api.tools.addTool({
+                    active: true,
+                    enabled: true,
+                    key: 'rotate',
+                    handlers: {
+                        drag: (ev) => {
+                            return {
+                                handle: function (ev) {
+                                    if (!statDragging) {
+                                        statDragging = true;
+                                        startPos = ev.clientX;
+                                        const config = configurator.getConfiguration();
+                                        if (
+                                            config.Jacket === 'OFF' &&
+                                            config.Vest &&
+                                            config.Vest === 'ON'
+                                        )
+                                            vestView = true;
+                                        else vestView = false;
+                                        const rotate = config['View angle'] || 'front';
+                                        curIdx = rotations.indexOf(rotate);
+                                    }
+                                    if (!vestView) {
+                                        const newDeltaIdx = Math.floor(
+                                            (ev.clientX - startPos) / DRAG_PIXEL_SENSITIVITY
+                                        );
+                                        if (newDeltaIdx !== deltaIdx) {
+                                            deltaIdx = newDeltaIdx;
+                                            let newIndex = (curIdx + newDeltaIdx) % 4;
+                                            if (newIndex <= -1) newIndex += 4;
+                                            configurator.setConfiguration({
+                                                'View angle': rotations[newIndex],
+                                            });
+                                        }
+                                    }
+                                },
+                                onEnd: () => {
+                                    statDragging = false;
+                                    deltaIdx = 0;
+                                },
+                            };
+                        },
+                    },
+                });
+                const configurator = await api.getConfigurator();
+                configurator.prefetchAttributes(['View angle']);
+                configurator.setConfig = (attr, value) => {
+                    // api.setImagePlaceholderMode(someValidation() ? 'translator' : 'visible');
+                    if (attr === 'fabric')
+                        return configurator.setConfiguration({
+                            fabric: { query: { metadata: { textileCode: value } } },
+                        });
+                    else return configurator.setConfiguration({ [attr]: value });
+                };
+                const saveConfiguration = () => {
+                    const formData = new FormData();
+                    formData.append('productId', assetId);
+                    formData.append('productVersion', 'v1.0');
+                    formData.append(
+                        'variant',
+                        JSON.stringify(configurator.getConfiguration())
+                    );
+
+                    return fetch(CONFIG_ENDPOINT, {
+                        method: 'POST',
+                        body: formData,
+                    }).then((res) => JSON.parse(res));
+                };
+                configurator.getConfigurationUrl = () => {
+                    return saveConfiguration().then(({ shortId }) => {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('tkcsid', shortId);
+                        return url.href;
+                    });
+                };
+                configurator.getConfigurationId = () => {
+                    return saveConfiguration().then(({ id }) => id);
+                };
+                return configurator;
+            });
+        };
+        const selector = document.getElementById('product-selector');
+        const button = document.getElementById('use-product');
+        const ASSETS = {
+            Classic: '11bc9ee1-a1a6-4918-9413-302ee079ecfe',
+            Modern: '7c5eafff-ba1e-419d-81fb-94d4f588d1a0',
+            Tuxedo: '06e7a17e-4993-430f-a81b-8ac05147d128'
+        }
+        button.onclick = async () => {
+            const products = document.getElementsByName('products');
+            let product;
+            for (let i = 0; i < products.length; i++) {
+                if (products[i].checked) {
+                    product = products[i].value;
+                }
+            }
+            console.log(product);
+            if (ASSETS[product]) {
+                document.body.removeChild(selector);
+                const api = await initializePlayer(ASSETS[product]);
+                window.api = api;
+            }
+        };
+    </script>
+</body>
+
+</html>

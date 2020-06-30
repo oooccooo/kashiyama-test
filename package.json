@@ -1,0 +1,8 @@
+{
+  "name": "kashiyama-test",
+  "version": "1.0.0",
+  "main": "index.html",
+  "repository": "git@github.com:oooccooo/kashiyama-test.git",
+  "author": "Chen Deng <cdeng@threekit.com>",
+  "license": "MIT"
+}
