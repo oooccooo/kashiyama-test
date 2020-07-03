@@ -6,6 +6,17 @@
 </head>
 
 <body>
+    <div id='env-selector'>
+        <h2>Select an environment</h1>
+            <label class="container">preview
+                <input type="radio" checked="checked" name="environment" value='preview' />
+                <span class="checkmark"></span>
+            </label>|
+            <label class="container">admin
+                <input type="radio" name="environment" value='admin' />
+                <span class="checkmark"></span>
+            </label>|
+    </div>
     <div id='product-selector'>
         <h2>Select a product</h1>
             <label class="container">Classic
@@ -24,11 +35,16 @@
     </div>
     <div id="player" style="height: 1000px;">
     </div>
-    <script src="https://admin.threekit.com/app/js/threekit-player.js"></script>
+    <!-- <script src="https://admin.threekit.com/app/js/threekit-player.js"></script> -->
     <script>
+        const TOKENS = {
+            admin:'17d52131-4f5b-4540-be0a-8b3570342f65',
+            preview:'42d98ce5-232e-4272-9309-865a1079d7cb'
+        }
+        let environment;
         const initializePlayer = (assetId, initialConfiguration = {}) => {
-            const AUTH_TOKEN = '17d52131-4f5b-4540-be0a-8b3570342f65';
-            const TK_ENV = 'https://admin.threekit.com/';
+            const AUTH_TOKEN = TOKENS[environment];
+            const TK_ENV = `https://${environment}.threekit.com/`;
             const CONFIG_ENDPOINT = `${TK_ENV}api/configurations?bearer_token=${AUTH_TOKEN}`;
             const DRAG_PIXEL_SENSITIVITY = 150;
             return threekitPlayer({
@@ -131,7 +147,8 @@
                 return configurator;
             });
         };
-        const selector = document.getElementById('product-selector');
+        const prodSelector = document.getElementById('product-selector');
+        const envSelector = document.getElementById('env-selector');
         const button = document.getElementById('use-product');
         const ASSETS = {
             Classic: '11bc9ee1-a1a6-4918-9413-302ee079ecfe',
@@ -146,11 +163,23 @@
                     product = products[i].value;
                 }
             }
-            console.log(product);
-            if (ASSETS[product]) {
-                document.body.removeChild(selector);
-                const api = await initializePlayer(ASSETS[product]);
-                window.api = api;
+            const environments = document.getElementsByName('environment');
+            for (let i = 0; i < environments.length; i++) {
+                if (environments[i].checked) {
+                    environment = environments[i].value;
+                }
+            }
+            console.log(product,environment);
+            if (ASSETS[product]&&TOKENS[environment]) {
+                const script = document.createElement('script');
+                script.setAttribute('src',`https://${environment}.threekit.com/app/js/threekit-player.js`);
+                document.body.appendChild(script)
+                document.body.removeChild(prodSelector);
+                document.body.removeChild(envSelector);
+                script.onload = async ()=>{
+                    const api = await initializePlayer(ASSETS[product]);
+                    window.api = api;
+                }
             }
         };
     </script>
