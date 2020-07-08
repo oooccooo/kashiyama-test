@@ -41,6 +41,11 @@
             admin:'17d52131-4f5b-4540-be0a-8b3570342f65',
             preview:'42d98ce5-232e-4272-9309-865a1079d7cb'
         }
+        const DEFAULT_FABRIC = {
+            Classic: {"assetId":"fc33d06f-f85f-4021-aeab-9f8cd3becedd"},
+            Modern: {"assetId":"ca46c369-c5d9-4b9d-bb8d-b71f1cc6091c"},
+            Tuxedo: {"assetId":"ab46a55a-dac9-4b53-ae7c-076deb829115"}
+        }
         let environment;
         const initializePlayer = (assetId, initialConfiguration = {}) => {
             const AUTH_TOKEN = TOKENS[environment];
@@ -177,7 +182,7 @@
                 document.body.removeChild(prodSelector);
                 document.body.removeChild(envSelector);
                 script.onload = async ()=>{
-                    const api = await initializePlayer(ASSETS[product]);
+                    const api = await initializePlayer(ASSETS[product],{fabric:DEFAULT_FABRIC[product]});
                     window.api = api;
                 }
             }
