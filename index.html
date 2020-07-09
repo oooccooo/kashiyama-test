@@ -59,6 +59,10 @@
                 initialConfiguration,
                 showConfigurator: true,
                 display: 'image',
+                cache: {
+                    maxAge: Infinity,
+                    scope: 'v1.0'
+                },
             }).then(async (api) => {
                 let statDragging = false;
                 let startPos = null;
