@@ -12,8 +12,8 @@
                 <input type="radio" checked="checked" name="environment" value='preview' />
                 <span class="checkmark"></span>
             </label>|
-            <label class="container">admin
-                <input type="radio" name="environment" value='admin' />
+            <label class="container">admin-fts
+                <input type="radio" name="environment" value='admin-fts' />
                 <span class="checkmark"></span>
             </label>|
     </div>
@@ -30,7 +30,11 @@
             <label class="container">Tuxedo
                 <input type="radio" name="products" value='Tuxedo' />
                 <span class="checkmark"></span>
-            </label>
+            </label>|
+            <label class="container">Women's Suit
+              <input type="radio" name="products" value='WM_Suit' />
+              <span class="checkmark"></span>
+          </label>
             <button id='use-product'>Use product</button>
     </div>
     <div id="player" style="height: 1000px;">
@@ -38,13 +42,14 @@
     <!-- <script src="https://admin.threekit.com/app/js/threekit-player.js"></script> -->
     <script>
         const TOKENS = {
-            admin:'17d52131-4f5b-4540-be0a-8b3570342f65',
+            'admin-fts':'606f7c9d-ff7c-49ed-aa5e-364dae0e96a3',
             preview:'42d98ce5-232e-4272-9309-865a1079d7cb'
         }
         const DEFAULT_FABRIC = {
             Classic: {"assetId":"fc33d06f-f85f-4021-aeab-9f8cd3becedd"},
             Modern: {"assetId":"ca46c369-c5d9-4b9d-bb8d-b71f1cc6091c"},
-            Tuxedo: {"assetId":"ab46a55a-dac9-4b53-ae7c-076deb829115"}
+            Tuxedo: {"assetId":"ab46a55a-dac9-4b53-ae7c-076deb829115"},
+            WM_Suit:{"assetId":"2a071f22-dff1-4e12-b138-a1490891e65c"}
         }
         let environment;
         const initializePlayer = (assetId, initialConfiguration = {}) => {
@@ -162,7 +167,8 @@
         const ASSETS = {
             Classic: '11bc9ee1-a1a6-4918-9413-302ee079ecfe',
             Modern: '7c5eafff-ba1e-419d-81fb-94d4f588d1a0',
-            Tuxedo: '06e7a17e-4993-430f-a81b-8ac05147d128'
+            Tuxedo: '06e7a17e-4993-430f-a81b-8ac05147d128',
+            WM_Suit:'24033f85-58f8-4ae5-aebd-113104a5e81f',
         }
         button.onclick = async () => {
             const products = document.getElementsByName('products');
